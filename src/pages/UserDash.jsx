@@ -89,6 +89,7 @@ const UserDash = () => {
 
   const handleJoin = async () => {
     try {
+        const token = localStorage.getItem('token');
       await axios.post(
         'https://trackxback.onrender.com/user/projects/join',
         { projectId: projectCode },
