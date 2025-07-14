@@ -4,31 +4,38 @@ import axios from 'axios'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from './ui/button'
+import toast from 'react-hot-toast'
 
 const LoginBox = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault()  // prevent page reload
+    e.preventDefault()
+    if (!email || !password) {
+      toast.error("Please fill in all fields.")
+      return
+    }
 
+    setLoading(true)
     try {
-      // Send login request to backend
       const res = await axios.post('https://trackxback.onrender.com/user/login', {
         email,
         password
       })
 
-      // Assuming backend returns a token
       const token = res.data.token
-      localStorage.setItem('token', token) // save token locally
+      localStorage.setItem('token', token)
 
-      alert('Login successful!')
-      navigate('/userdash') // redirect user to dashboard or homepage
-    } catch (error) {
-      console.error('Login failed:', error.response?.data || error.message)
-      alert('Login failed: ' + (error.response?.data.error || 'Unknown error'))
+      toast.success("Login successful!")
+      navigate('/userdash')
+    } catch (err) {
+      console.error('Login failed:', err.response?.data || err.message)
+      toast.error(err.response?.data?.error || "Login failed.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -39,7 +46,6 @@ const LoginBox = () => {
           <span className="py-2 font-mono text-zinc-700">Welcome Back!!!</span>
         </div>
 
-        {/* Use form and hook up submit handler */}
         <form onSubmit={handleSubmit} className="grid w-full max-w-sm items-center gap-3">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -59,15 +65,23 @@ const LoginBox = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            placeholder="password"
+            placeholder="Password"
           />
-          <Button type="submit" className="bg-zinc-600 my-2">Submit</Button>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className={`bg-zinc-600 my-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {loading ? 'Logging in...' : 'Submit'}
+          </Button>
 
           <div className="flex items-center my-2">
             <div className="flex-grow border-t border-gray-300"></div>
             <span className="mx-4 text-gray-500">or</span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
+
           <Link to={'/signup'} className="text-blue-700">Don't have an account? Signup</Link>
         </form>
       </div>
@@ -76,4 +90,3 @@ const LoginBox = () => {
 }
 
 export default LoginBox
-
